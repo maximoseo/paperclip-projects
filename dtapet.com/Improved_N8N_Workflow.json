@@ -1,0 +1,320 @@
+{
+  "name": "DTAPET - Reconstructed Article Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d8f89a2a-4fae-4a77-b4dd-5b3d2d9db2a4",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};d.article_topic=d.article_topic||'השוואת חיפויי קיר';d.business_name='דויטשמן טפטים';d.site_url='https://www.dtapet.com/';d.contact_url='https://www.dtapet.com/%D7%99%D7%A6%D7%99%D7%A8%D7%AA-%D7%A7%D7%A9%D7%A8/';d.products_api_url=d.products_api_url||$env.DTAPET_PRODUCTS_API_URL||'https://www.dtapet.com/wp-json/wc/store/v1/products?per_page=12';d.reviews_api_url=d.reviews_api_url||$env.DTAPET_REVIEWS_API_URL||'';d.openai_model=d.openai_model||$env.OPENAI_MODEL||'gpt-4.1-mini';d.prompt_template_version='dtapet-v2026-03-29';return [{json:d}];"
+      },
+      "id": "cd262fd5-4e90-4e5d-8e08-93499e3414fd",
+      "name": "Campaign Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};let raw=[];if(d.products_api_url){try{const r=await fetch(d.products_api_url,{headers:{accept:'application/json'}});if(r.ok){const j=await r.json();raw=Array.isArray(j)?j:(Array.isArray(j.products)?j.products:[]);}else{d.products_fetch_error='HTTP '+r.status;}}catch(e){d.products_fetch_error=String(e.message||e);}}const normalized=(raw||[]).map((p)=>{const imgs=Array.isArray(p.images)?p.images:[];const supa=p.image_url_supabase||p.imagePublicUrl||((imgs.find((i)=>i&&i.src&&String(i.src).includes('supabase'))||{}).src)||null;const anyImg=supa||((imgs[0]||{}).src)||null;return {id:p.id||p.sku||null,name:p.name||p.title||'',slug:p.slug||null,product_url:p.permalink||p.url||p.link||null,price:(p.prices&&p.prices.price)?p.prices.price:(p.price||''),currency:(p.prices&&p.prices.currency_code)||'ILS',image_url_supabase:supa,image_url:anyImg,category:(Array.isArray(p.categories)&&p.categories[0])?p.categories[0].name:null};}).filter((p)=>p.name&&p.product_url);d.products=normalized.slice(0,12);return [{json:d}];"
+      },
+      "id": "95d6f6f3-9830-4b0f-8c2d-47933cc8a246",
+      "name": "Load Product Catalog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -540,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};let rows=[];if(d.reviews_api_url){try{const r=await fetch(d.reviews_api_url,{headers:{accept:'application/json'}});if(r.ok){const j=await r.json();rows=Array.isArray(j)?j:(Array.isArray(j.reviews)?j.reviews:[]);}else{d.reviews_fetch_error='HTTP '+r.status;}}catch(e){d.reviews_fetch_error=String(e.message||e);}}d.reviews_data=(rows||[]).map((r)=>({reviewer_name:r.reviewer_name||r.author||r.name||'לקוח מאומת',rating:Number(r.rating||5),text:r.text||r.review||r.content||'',source:r.source||'Site',verified:r.verified!==false})).filter((r)=>r.text&&r.verified).slice(0,6);return [{json:d}];"
+      },
+      "id": "a63f5f30-7c71-47ee-9dd6-6541ccac51b8",
+      "name": "Load Reviews Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};d.social_profiles=[{network:'facebook',url:'https://www.facebook.com/DTAPET'},{network:'instagram',url:'https://www.instagram.com/deutschman_wallpaper/'}];return [{json:d}];"
+      },
+      "id": "325ad938-e0b2-41c5-ad5d-75db12435f66",
+      "name": "Social Profiles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const hero=d.hero_image_url||'https://www.dtapet.com/wp-content/uploads/2026/04/WallCladdingComparisonHowtoChoosetheRightWallCoveringbyDesignDurabilityandBudget.jpg';const s1=d.section_image_1_url||hero;const s2=d.section_image_2_url||hero;const s3=d.section_image_3_url||hero;const s4=d.section_image_4_url||hero;d.images={section_1:{url:s1,alt:'תמונת המחשה חיפויי קיר 1',source:'workflow'},section_2:{url:s2,alt:'תמונת המחשה חיפויי קיר 2',source:'workflow'},section_3:{url:s3,alt:'תמונת המחשה חיפויי קיר 3',source:'workflow'},section_4:{url:s4,alt:'תמונת המחשה חיפויי קיר 4',source:'workflow'},hero:{url:hero,alt:'תמונת שער להשוואת חיפויי קיר',source:'workflow'}};return [{json:d}];"
+      },
+      "id": "7f2d7c18-c307-43f2-b915-bfd48bc8e99a",
+      "name": "Preparing Images for HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const topic=d.article_topic||'השוואת חיפויי קיר';const apiKey=$env.OPENAI_API_KEY||'';let text='';if(apiKey){try{const body={model:d.openai_model||'gpt-4.1-mini',input:[{role:'system',content:'You are a senior Hebrew interior design editor. Return practical article body text with internal/external links where relevant.'},{role:'user',content:'כתבו תוכן כתבה מקצועי בעברית בנושא: '+topic+'. החזירו טקסט עשיר עם כותרות משנה ורעיונות פרקטיים, בלי HTML.'}]};const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(body)});if(r.ok){const j=await r.json();text=j.output_text||'';if(!text&&Array.isArray(j.output)){text=j.output.map((o)=>Array.isArray(o.content)?o.content.map((c)=>c.text||'').join('\\n'):'').join('\\n');}}else{d.writing_blog_error='HTTP '+r.status;}}catch(e){d.writing_blog_error=String(e.message||e);}}if(!text){text='פתיחה: בחירת חיפוי קיר דורשת איזון בין עיצוב, עמידות, תחזוקה ועלות כוללת.\\n\\nמה חשוב לבדוק: התאמה לרמת הלחות בחלל, רגישות לניקוי יומיומי, ואיכות ההתקנה על גבי תשתית קיימת.\\n\\nבדירה פעילה עם ילדים, חפשו חומרים רחיצים ועמידים לשחיקה. באזורים רטובים העדיפו פתרונות עמידי אדים.\\n\\nלמידע נוסף וקישורים פנימיים: https://www.dtapet.com/';}d.output=String(text).trim();return [{json:d}];"
+      },
+      "id": "b2cc7fdf-8346-4a47-a839-8ea6978c6b91",
+      "name": "Writing Blog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        340,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const products=Array.isArray(d.products)?d.products:[];const reviews=Array.isArray(d.reviews_data)?d.reviews_data:[];const social=Array.isArray(d.social_profiles)?d.social_profiles:[];const images=d.images||{};const image=(k)=>(((images[k]||{}).url)||'');const injected='### מוצרים זמינים:\\n'+JSON.stringify(products,null,2)+'\\n\\n### תוכן הכתבה:\\n'+(d.output||'')+'\\n\\n### ביקורות מאומתות:\\n'+JSON.stringify(reviews,null,2)+'\\n\\n### פרופילים חברתיים:\\n'+JSON.stringify(social,null,2)+'\\n\\nחובה! להקפיד לשים במאמר הקישורים החיצוניים וגם הקישורים הפנימיים כמו שקיבלת בתוכן הכתבה.\\n\\n### תמונות זמינות:\\nSection image 1 URL: '+image('section_1')+'\\nSection image 2 URL: '+image('section_2')+'\\nSection image 3 URL: '+image('section_3')+'\\nSection image 4 URL: '+image('section_4')+'\\nHero image URL: '+image('hero');const base='Generate raw HTML only, minified, WordPress-safe, RTL Hebrew article for dtapet.com. No <style>, no classes, no <h1>, no markdown, no comments. Use inline styles and include TOC, product cards from provided product JSON, FAQ, author card, and JSON-LD.';d.final_prompt=base+'\\n\\nTopic: '+(d.article_topic||'')+'\\nBusiness: '+(d.business_name||'')+'\\n\\n'+injected;return [{json:d}];"
+      },
+      "id": "eb64c14e-e72f-4f31-b405-13ed9f66ff4f",
+      "name": "Build Prompt Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const apiKey=$env.OPENAI_API_KEY||'';const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');let html='';if(apiKey){try{const body={model:d.openai_model||'gpt-4.1-mini',input:[{role:'system',content:'Return only minified HTML. Start with <article lang=\"he\" dir=\"rtl\"> and end with </article>.'},{role:'user',content:d.final_prompt||''}]};const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(body)});if(r.ok){const j=await r.json();html=(j.output_text||'').trim();if(!html&&Array.isArray(j.output)){html=j.output.map((o)=>Array.isArray(o.content)?o.content.map((c)=>c.text||'').join(' '):'').join(' ').trim();}}else{d.html_generation_error='HTTP '+r.status;}}catch(e){d.html_generation_error=String(e.message||e);}}if(!html){const heroUrl=((d.images||{}).hero||{}).url||'';const heroAlt=((d.images||{}).hero||{}).alt||d.article_topic||'';const p=(d.output||'').split(/\\n+/).filter((x)=>x.trim()).slice(0,6).map((x)=>'<p style=\"font-size:1.05rem;line-height:1.85;color:#333333;\">'+esc(x)+'</p>').join('');const top=(Array.isArray(d.products)?d.products:[]).filter((x)=>x.image_url_supabase&&x.product_url).slice(0,3).map((x)=>'<a href=\"'+esc(x.product_url)+'\" style=\"text-decoration:none;color:inherit;display:flex;flex-direction:column;background:#fff;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;\"><img src=\"'+esc(x.image_url_supabase)+'\" alt=\"'+esc(x.name)+'\" style=\"width:100%;height:220px;object-fit:contain;padding:0.75rem;\"><span style=\"padding:0.75rem;font-weight:700;color:#2b2e34;\">'+esc(x.name)+'</span></a>').join('');html='<article lang=\"he\" dir=\"rtl\" style=\"font-family:\\'Assistant\\',Arial,sans-serif;color:#333333;background:#ffffff;max-width:960px;margin:0 auto;padding:0 1rem;font-size:1.05rem;line-height:1.85;\"><img src=\"'+esc(heroUrl)+'\" alt=\"'+esc(heroAlt)+'\" style=\"width:100%;height:auto;border-radius:8px;margin:0 0 1.5rem;display:block;\"><h2 style=\"font-size:clamp(1.4rem,2.5vw,1.8rem);font-weight:700;color:#2b2e34;border-right:3px solid #bc1f1f;padding-right:12px;\">'+esc(d.article_topic||'')+'</h2>'+p+(top?'<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.25rem 0;\">'+top+'</div>':'')+'<div style=\"text-align:center;margin:2rem 0;\"><a href=\"'+esc(d.contact_url||'https://www.dtapet.com/%D7%99%D7%A6%D7%99%D7%A8%D7%AA-%D7%A7%D7%A9%D7%A8/')+'\" style=\"display:inline-block;background:#bc1f1f;color:#fff;padding:14px 36px;border-radius:6px;text-decoration:none;font-weight:700;\">לייעוץ אישי</a></div></article>';d.generation_mode='fallback';}else{d.generation_mode='openai';}d.generated_html=html;return [{json:d}];"
+      },
+      "id": "c4523c94-ff00-4f0d-9bcb-5aab83803d8c",
+      "name": "Generate HTML Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const html=String(d.generated_html||'').trim();const errors=[];if(!html.startsWith('<article lang=\"he\" dir=\"rtl\"')) errors.push('Output must start with <article lang=\"he\" dir=\"rtl\">');if(!html.endsWith('</article>')) errors.push('Output must end with </article>');if(/<style\\b/i.test(html)) errors.push('Contains forbidden <style> block');if(/\\sclass\\s*=\\s*\"/i.test(html)) errors.push('Contains forbidden class attributes');if(/<h1\\b/i.test(html)) errors.push('Contains forbidden <h1> tag');if(/```|^\\s*#\\s+/m.test(html)) errors.push('Contains markdown artifacts');d.html_quality={ok:errors.length===0,errors};return [{json:d}];"
+      },
+      "id": "5c1f54b8-24e8-4f58-8f2c-f405a300fd2d",
+      "name": "HTML Quality Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.html_quality.ok}}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": "8ad53f8f-6181-479c-b5eb-6777d5be9f2c",
+      "name": "Is HTML Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d={...$json};const products=Array.isArray(d.products)?d.products:[];const withSupa=products.filter((p)=>p.image_url_supabase);return [{json:{status:'ready',article_topic:d.article_topic,business_name:d.business_name,prompt_template_version:d.prompt_template_version,prompt_for_html_generator:d.final_prompt,generated_html:d.generated_html,generation_mode:d.generation_mode,products_count:products.length,products_with_supabase_images:withSupa.length,reviews_count:Array.isArray(d.reviews_data)?d.reviews_data.length:0,social_profiles:Array.isArray(d.social_profiles)?d.social_profiles:[],images:d.images,html_quality:d.html_quality,notes:['Writing Blog and Preparing Images for HTML are preserved by name.','If OPENAI_API_KEY is configured, both text and HTML generation use the live model API.','Without API key, workflow still produces deterministic fallback outputs for QA and downstream handling.']}}];"
+      },
+      "id": "57e92498-f2ce-47d0-a20b-7977d0075ebf",
+      "name": "Ready Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const errs=((($json||{}).html_quality||{}).errors)||['Unknown HTML validation failure'];throw new Error('DTAPET HTML validation failed: '+errs.join('; '));"
+      },
+      "id": "4d4a5aad-03f2-4559-9416-c2fcc2f88de8",
+      "name": "Fail - HTML Invalid",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Campaign Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Campaign Input": {
+      "main": [
+        [
+          {
+            "node": "Load Product Catalog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Product Catalog": {
+      "main": [
+        [
+          {
+            "node": "Load Reviews Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Reviews Data": {
+      "main": [
+        [
+          {
+            "node": "Social Profiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Profiles": {
+      "main": [
+        [
+          {
+            "node": "Preparing Images for HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparing Images for HTML": {
+      "main": [
+        [
+          {
+            "node": "Writing Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writing Blog": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt Payload": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Article": {
+      "main": [
+        [
+          {
+            "node": "HTML Quality Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Quality Gate": {
+      "main": [
+        [
+          {
+            "node": "Is HTML Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is HTML Valid?": {
+      "main": [
+        [
+          {
+            "node": "Ready Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail - HTML Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "1d4bc11f-9377-4ddf-b542-f215cf5fa0b7",
+  "active": false,
+  "tags": []
+}
