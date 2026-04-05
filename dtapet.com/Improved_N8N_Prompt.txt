@@ -185,15 +185,12 @@ H. FINAL CTA BUTTON (centered)
 I. AUTHOR BIO (last visible content block)
 - Author: צוות דויטשמן טפטים
 - Mention 2009 founding and expertise naturally.
-- Include phone/email and social buttons.
+- Include phone/email and real social links from `social_profiles`.
+- Social links must open in a new tab with `target="_blank"` and `rel="noopener noreferrer"`.
+- Render the social links as icon buttons, not plain text-only links.
 
-J. LEFT-SIDE FLOATING BUTTONS
-- Back-to-top + contact only, on LEFT side.
-- No WhatsApp floating button.
-
-K. JSON-LD BLOCKS (at end, before </article>)
+J. JSON-LD BLOCKS (at end, before </article>)
 - Article
-- LocalBusiness
 - FAQPage (must match visible FAQ items)
 
 
@@ -206,7 +203,14 @@ TOC summary pattern:
 <summary style="cursor:pointer;padding:14px 50px 14px 20px;font-weight:700;font-size:1.05rem;color:#2b2e34;list-style:none!important;list-style-type:none!important;-webkit-appearance:none!important;display:block!important;position:relative!important;background:#f5f5f5;font-family:'Assistant',Arial,sans-serif;" onmouseover="this.style.backgroundColor='#eeecec'" onmouseout="this.style.backgroundColor='#f5f5f5'">תוכן עניינים<span style="position:absolute!important;left:18px!important;top:50%!important;transform:translateY(-50%)!important;display:inline-block!important;width:22px!important;height:22px!important;line-height:22px!important;text-align:center!important;font-size:1.15rem;color:#bc1f1f;font-weight:400;">+</span></summary>
 
 FAQ summary pattern:
-<summary style="cursor:pointer;padding:15px 50px 15px 20px;font-weight:600;font-size:0.96rem;color:#2b2e34;list-style:none!important;list-style-type:none!important;-webkit-appearance:none!important;display:block!important;position:relative!important;font-family:'Assistant',Arial,sans-serif;" onmouseover="this.style.backgroundColor='#faf8f8'" onmouseout="this.style.backgroundColor='transparent'"><span>[QUESTION TEXT]</span><span style="position:absolute!important;left:18px!important;top:50%!important;transform:translateY(-50%)!important;display:inline-block!important;width:22px!important;height:22px!important;line-height:22px!important;text-align:center!important;font-size:1.1rem;color:#bc1f1f;font-weight:400;">+</span></summary>
+<summary style="cursor:pointer;padding:15px 50px 15px 20px;font-weight:600;font-size:0.96rem;color:#2b2e34;list-style:none!important;list-style-type:none!important;-webkit-appearance:none!important;display:block!important;position:relative!important;font-family:'Assistant',Arial,sans-serif;background:#faf8f8;" onmouseover="this.style.backgroundColor='#f3efef'" onmouseout="this.style.backgroundColor='#faf8f8'"><span>[QUESTION TEXT]</span><span style="position:absolute!important;left:18px!important;top:50%!important;transform:translateY(-50%)!important;display:inline-block!important;width:22px!important;height:22px!important;line-height:22px!important;text-align:center!important;font-size:1.1rem;color:#bc1f1f;font-weight:400;">+</span></summary>
+
+TOC item link hover pattern:
+<a href="#[SECTION_ID]" style="display:block;padding:8px 6px;color:#2b2e34;text-decoration:none;border-radius:4px;font-family:'Assistant',Arial,sans-serif;" onmouseover="this.style.backgroundColor='#faf5f5';this.style.color='#bc1f1f'" onmouseout="this.style.backgroundColor='transparent';this.style.color='#2b2e34'">[SECTION LABEL]</a>
+
+CTA hover rule:
+- Every CTA button must include inline `onmouseover` / `onmouseout` color-change behavior.
+- Apply this to mid-article CTAs, final CTA, and author social icon buttons.
 
 
 SECTION 7 — PRODUCT CARD CONTRACT
@@ -258,6 +262,8 @@ Confirm all:
 - Optional sections appear only when data is valid.
 - Product card rules and product-count logic are respected.
 - No fabricated data and no broken links.
+- TOC links, FAQ summaries, CTA buttons, and author social buttons include hover states.
+- Social links open in new tabs with noopener protection.
 - Output is readable, practical, and brand-accurate Hebrew.
 
 
